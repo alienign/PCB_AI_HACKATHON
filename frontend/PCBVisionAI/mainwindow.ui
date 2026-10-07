@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="1">
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="pageStart">
+       <property name="styleSheet">
+        <string notr="true">QWidget#pageStart {
+    background-color: #071512;
+}</string>
+       </property>
+       <widget class="QFrame" name="frameStartInfo">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>451</width>
+          <height>541</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QFrame#frameStartInfo {
+    background: transparent;
+    border: none;
+}</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <widget class="QWidget" name="">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>62</y>
+           <width>421</width>
+           <height>451</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>120</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelTitle">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+    color: #F3F7F5;
+    font-size: 50px;
+    font-weight: 700;
+}</string>
+            </property>
+            <property name="text">
+             <string>&lt;span style=&quot;color:#F3FFFC;&quot;&gt;PCB &lt;/span&gt;
+&lt;span style=&quot;color:#20D6A3;&quot;&gt;Vision AI&lt;/span&gt;</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::TextFormat::RichText</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelSubtitle">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+    color: #F0F4F2;
+    font-size: 29px;
+    font-weight: 600;
+}</string>
+            </property>
+            <property name="text">
+             <string>Интеллектуальный анализ печатных плат</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelDescription">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+    color: #93A59F;
+    font-size: 14px;
+}</string>
+            </property>
+            <property name="text">
+             <string>Инструмент для визуального анализа печатных плат и поиска потенциальных дефектов.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>5</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnStart">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>180</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>205</width>
+              <height>45</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    background-color: #10C98B;
+    color: white;
+    border: 1px solid #35E6AD;
+    border-radius: 10px;
+    padding: 6px 20px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QPushButton:hover {
+    background-color: #18D99A;
+}
+
+QPushButton:pressed {
+    background-color: #0DAA76;
+}</string>
+            </property>
+            <property name="text">
+             <string>Начать</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="btnStatistics">
+              <property name="minimumSize">
+               <size>
+                <width>180</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>205</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: rgba(15, 42, 35, 180);
+    color: #DDE8E4;
+    border: 1px solid #31554B;
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 13px;
+}</string>
+              </property>
+              <property name="text">
+               <string>Статистика</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnHistory">
+              <property name="maximumSize">
+               <size>
+                <width>205</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: rgba(15, 42, 35, 180);
+    color: #DDE8E4;
+    border: 1px solid #31554B;
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 13px;
+}</string>
+              </property>
+              <property name="text">
+               <string>История</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+         <zorder>verticalSpacer</zorder>
+         <zorder>verticalSpacer_2</zorder>
+         <zorder>verticalSpacer_3</zorder>
+         <zorder>labelDescription</zorder>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="frameStartVisual">
+        <property name="geometry">
+         <rect>
+          <x>460</x>
+          <y>60</y>
+          <width>301</width>
+          <height>451</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QFrame#frameStartVisual {
+    background: transparent;
+    border: none;
+}</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelBoardVisual">
+        <property name="geometry">
+         <rect>
+          <x>310</x>
+          <y>-20</y>
+          <width>471</width>
+          <height>571</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="resources.qrc">:/images/images/board_soft1.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+       <zorder>labelBoardVisual</zorder>
+       <zorder>frameStartInfo</zorder>
+       <zorder>frameStartVisual</zorder>
+      </widget>
+      <widget class="QWidget" name="pageLoading">
+       <property name="styleSheet">
+        <string notr="true">QWidget#pageLoading {
+    background-color: #061716;
+}</string>
+       </property>
+       <widget class="QLabel" name="labelLoadingTitle">
+        <property name="geometry">
+         <rect>
+          <x>260</x>
+          <y>160</y>
+          <width>231</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+    color: #F3FFFC;
+    font-size: 28px;
+    font-weight: 700;
+}</string>
+        </property>
+        <property name="text">
+         <string>Поиск дефектов</string>
+        </property>
+       </widget>
+       <widget class="QProgressBar" name="progressAnalysis">
+        <property name="geometry">
+         <rect>
+          <x>320</x>
+          <y>230</y>
+          <width>118</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QProgressBar {
+    background-color: #0B2320;
+    border: 1px solid #163A35;
+    border-radius: 8px;
+    text-align: center;
+    color: #EAF7F4;
+    height: 16px;
+}
+
+QProgressBar::chunk {
+    background-color: #20D6A3;
+    border-radius: 8px;
+}</string>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pageResult">
+       <widget class="QPushButton" name="btnBackResult">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>31</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>←</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelResultTitle">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>10</y>
+          <width>101</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Результат анализа</string>
+        </property>
+       </widget>
+       <widget class="QFrame" name="frameImageArea">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>100</y>
+          <width>401</width>
+          <height>361</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <widget class="QLabel" name="labelResultImage">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>160</y>
+           <width>45</width>
+           <height>15</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="frameDefects">
+        <property name="geometry">
+         <rect>
+          <x>540</x>
+          <y>50</y>
+          <width>231</width>
+          <height>481</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <widget class="QLabel" name="labelDefectsTitle">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>10</y>
+           <width>161</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Обнаруженные дефекты</string>
+         </property>
+        </widget>
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>211</width>
+           <height>431</height>
+          </rect>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>209</width>
+            <height>429</height>
+           </rect>
+          </property>
+         </widget>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="btnZoomIn">
+        <property name="geometry">
+         <rect>
+          <x>330</x>
+          <y>10</y>
+          <width>21</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>+</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnZoomOut">
+        <property name="geometry">
+         <rect>
+          <x>450</x>
+          <y>10</y>
+          <width>21</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>−</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton">
+        <property name="geometry">
+         <rect>
+          <x>360</x>
+          <y>10</y>
+          <width>80</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>PushButton</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="pageUpload">
+       <property name="styleSheet">
+        <string notr="true">QWidget#pageUpload {
+    background-color: #061716;
+}</string>
+       </property>
+       <widget class="QPushButton" name="btnBackUpload">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>31</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: rgba(11, 35, 32, 180);
+    color: #EAF7F4;
+    border: 1px solid #1B4A43;
+    border-radius: 10px;
+    font-size: 18px;
+    padding: 4px 8px;
+}
+
+QPushButton:hover {
+    background-color: #10302C;
+    border: 1px solid #20D6A3;
+}</string>
+        </property>
+        <property name="text">
+         <string>←</string>
+        </property>
+       </widget>
+       <widget class="QFrame" name="frameUploadCard">
+        <property name="geometry">
+         <rect>
+          <x>130</x>
+          <y>120</y>
+          <width>541</width>
+          <height>311</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QFrame#frameUploadCard {
+    background-color: rgba(8, 29, 27, 220);
+    border: 1px solid #163A35;
+    border-radius: 22px;
+}</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="btnChooseFile">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>210</y>
+           <width>191</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #20D6A3;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 20px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QPushButton:hover {
+    background-color: #29E0AE;
+}
+
+QPushButton:pressed {
+    background-color: #18B88C;
+}</string>
+         </property>
+         <property name="text">
+          <string>Выбрать файл</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelUploadSubtitle">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>110</y>
+           <width>301</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel {
+    color: #91AAA5;
+    font-size: 15px;
+}</string>
+         </property>
+         <property name="text">
+          <string>Выберите изображение PCB для анализа</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelUploadTitle">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>20</y>
+           <width>461</width>
+           <height>71</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel {
+    color: #F3FFFC;
+    font-size: 30px;
+    font-weight: 700;
+}</string>
+         </property>
+         <property name="text">
+          <string>Загрузите изображение платы</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

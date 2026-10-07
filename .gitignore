@@ -1,0 +1,5 @@
+
+# Qt Creator / CMake
+frontend/PCBVisionAI/build/
+frontend/PCBVisionAI/.qtcreator/
+*.user

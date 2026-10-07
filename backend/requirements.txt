@@ -3,3 +3,6 @@ uvicorn[standard]
 pydantic-settings
 python-multipart
 Pillow
+SQLAlchemy
+psycopg[binary]
+alembic

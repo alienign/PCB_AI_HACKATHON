@@ -1,7 +1,14 @@
-"""
-FastAPI dependencies.
+from collections.abc import Generator
 
-Здесь позже будут подключены зависимости backend:
-- get_db() — сессия базы данных;
-- get_ml_service() — сервис ML-модели.
-"""
+from sqlalchemy.orm import Session
+
+from app.db.session import SessionLocal
+
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()

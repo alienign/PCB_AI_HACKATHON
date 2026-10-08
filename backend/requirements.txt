@@ -7,3 +7,7 @@ SQLAlchemy
 psycopg[binary]
 alembic
 pytest
+
+torch
+torchvision
+ultralytics

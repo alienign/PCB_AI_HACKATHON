@@ -34,7 +34,10 @@ def run_analysis(
     6. Переводит AnalysisRequest в completed.
 
     При ошибке после перехода в processing
-    переводит запрос в failed.
+    пытается перевести запрос в failed.
+
+    Если сохранение failed тоже завершится ошибкой,
+    первоначальное исключение анализа сохраняется.
     """
 
     start_time = perf_counter()
@@ -108,20 +111,36 @@ def run_analysis(
         return analysis
 
     except Exception as error:
+        # Откатываем незавершённую транзакцию.
         db.rollback()
 
+        # Записываем первоначальную ошибку анализа.
         logger.exception(
             "Analysis request %s: failed",
             request_id,
         )
 
-        # Сохраняем существующее поведение:
-        # фиксируем ошибку анализа в PostgreSQL.
-        fail_processing(
-            db,
-            request_id,
-            error_code="ANALYSIS_FAILED",
-            error_message=str(error)[:1000],
-        )
+        # Пытаемся сохранить статус failed в PostgreSQL.
+        # Ошибка этой операции не должна скрывать
+        # первоначальное исключение YOLO.
+        try:
+            fail_processing(
+                db,
+                request_id,
+                error_code="ANALYSIS_FAILED",
+                error_message=str(error)[:1000],
+            )
 
+        except Exception:
+            # Если сохранение failed не удалось,
+            # откатываем его незавершённую транзакцию.
+            db.rollback()
+
+            logger.exception(
+                "Analysis request %s: "
+                "failed to persist error status",
+                request_id,
+            )
+
+        # Повторно выбрасываем первоначальное исключение.
         raise

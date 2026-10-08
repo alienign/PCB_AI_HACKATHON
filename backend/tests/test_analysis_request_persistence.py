@@ -18,6 +18,8 @@ from app.services.analysis_request_service import (
     fail_processing,
     start_processing,
 )
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
@@ -263,3 +265,65 @@ def test_nonexistent_image_is_rejected(db):
             session,
             999999999,
         )
+def test_concurrent_processing_only_one_succeeds(db):
+    """
+    Два конкурентных запроса пытаются перевести
+    один AnalysisRequest из created в processing.
+
+    Ожидается:
+    - один успешный переход;
+    - один InvalidAnalysisRequestTransitionError;
+    - итоговый статус processing.
+    """
+    image = create_test_image(db)
+
+    request = create_analysis_request_for_image(
+        db,
+        image.image_id,
+    )
+
+    request_id = request.analysis_request_id
+
+    barrier = Barrier(2)
+
+    def worker():
+        session = TestSessionLocal()
+
+        try:
+            barrier.wait(timeout=10)
+
+            start_processing(
+                session,
+                request_id,
+            )
+
+            return "success"
+
+        except InvalidAnalysisRequestTransitionError:
+            return "conflict"
+
+        finally:
+            session.close()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [
+            executor.submit(worker)
+            for _ in range(2)
+        ]
+
+        results = [
+            future.result(timeout=20)
+            for future in futures
+        ]
+
+    assert results.count("success") == 1
+    assert results.count("conflict") == 1
+
+    db.expire_all()
+
+    stored_request = db.get(
+        AnalysisRequest,
+        request_id,
+    )
+
+    assert stored_request.request_status == "processing"

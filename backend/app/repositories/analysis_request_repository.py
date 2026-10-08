@@ -33,15 +33,30 @@ def mark_processing(
     db: Session,
     analysis_request: AnalysisRequest,
 ) -> AnalysisRequest:
-    if analysis_request.request_status != "created":
+    from sqlalchemy import update
+
+    stmt = (
+        update(AnalysisRequest)
+        .where(
+            AnalysisRequest.analysis_request_id
+            == analysis_request.analysis_request_id,
+            AnalysisRequest.request_status == "created",
+        )
+        .values(
+            request_status="processing",
+            started_at=func.now(),
+        )
+        .returning(AnalysisRequest.analysis_request_id)
+    )
+
+    updated_id = db.scalar(stmt)
+
+    if updated_id is None:
         raise ValueError(
             "Only created analysis requests can start processing."
         )
 
-    analysis_request.request_status = "processing"
-    analysis_request.started_at = func.now()
-
-    db.flush()
+    db.refresh(analysis_request)
 
     return analysis_request
 

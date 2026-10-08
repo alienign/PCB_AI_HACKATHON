@@ -6,3 +6,4 @@ Pillow
 SQLAlchemy
 psycopg[binary]
 alembic
+pytest

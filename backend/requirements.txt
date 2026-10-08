@@ -6,3 +6,4 @@ Pillow
 SQLAlchemy
 psycopg[binary]
 alembic
+ultralytics==8.4.174

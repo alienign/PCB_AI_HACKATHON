@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="pageStart">
        <property name="styleSheet">
@@ -128,34 +128,36 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>5</width>
-              <height>40</height>
+              <width>3</width>
+              <height>20</height>
              </size>
             </property>
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="btnStart">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>180</width>
-              <height>39</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>45</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton#btnStart {
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="btnStart">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>180</width>
+                <height>39</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>200</width>
+                <height>45</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton#btnStart {
     background-color: qlineargradient(
         spread:pad,
         x1:0, y1:0,
@@ -200,46 +202,9 @@ QPushButton#btnStart:disabled {
     color: rgba(255, 255, 255, 140);
     border: 1px solid rgba(80, 130, 120, 120);
 }</string>
-            </property>
-            <property name="text">
-             <string>▶  Начать</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QPushButton" name="btnStatistics">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>200</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>205</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton {
-    background-color: rgba(15, 42, 35, 180);
-    color: #DDE8E4;
-    border: 1px solid #31554B;
-    border-radius: 8px;
-    padding: 5px 14px;
-    font-size: 13px;
-}</string>
               </property>
               <property name="text">
-               <string>Статистика</string>
+               <string>▶  Начать</string>
               </property>
              </widget>
             </item>
@@ -311,7 +276,7 @@ QPushButton#btnHistory:pressed {
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>40</height>
+              <height>60</height>
              </size>
             </property>
            </spacer>
@@ -319,7 +284,6 @@ QPushButton#btnHistory:pressed {
          </layout>
          <zorder>labelTitle</zorder>
          <zorder>labelSubtitle</zorder>
-         <zorder>btnStart</zorder>
          <zorder>verticalSpacer</zorder>
          <zorder>verticalSpacer_2</zorder>
          <zorder>verticalSpacer_3</zorder>
@@ -373,6 +337,131 @@ QPushButton#btnHistory:pressed {
        <zorder>labelBoardVisual</zorder>
        <zorder>frameStartInfo</zorder>
        <zorder>frameStartVisual</zorder>
+      </widget>
+      <widget class="QWidget" name="pageHistory">
+       <property name="styleSheet">
+        <string notr="true">QWidget#pageHistory {
+    background-color: #081411;
+}</string>
+       </property>
+       <widget class="QPushButton" name="btnBackHistory">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>10</y>
+          <width>31</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton#btnBackHistory {
+    background-color: #0E2A26;
+    color: #EAF7F4;
+    border: 1px solid #1C443E;
+    border-radius: 12px;
+    font-size: 20px;
+}
+
+QPushButton#btnBackHistory:hover {
+    background-color: #123832;
+    border: 1px solid #20D6A3;
+}
+
+QPushButton#btnBackHistory:pressed {
+    background-color: #0A211E;
+}</string>
+        </property>
+        <property name="text">
+         <string>←</string>
+        </property>
+       </widget>
+       <widget class="QScrollArea" name="scrollAreaHistory">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>50</y>
+          <width>731</width>
+          <height>471</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QScrollArea#scrollAreaHistory {
+    background-color: #0A1D19;
+    border: 1px solid #1C443E;
+    border-radius: 16px;
+
+} QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 8px 2px 8px 2px;
+}
+
+QScrollBar::handle:vertical {
+    background: #28554D;
+    min-height: 30px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #20D6A3;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
+}</string>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaHistoryContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>729</width>
+           <height>469</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QWidget#scrollAreaHistoryContents {
+    background-color: transparent;
+}</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QLabel" name="labelHistoryTitle">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>771</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel#labelHistoryTitle {
+    color: #EAF7F4;
+    font-size: 24px;
+    font-weight: 700;
+    background: transparent;
+}</string>
+        </property>
+        <property name="text">
+         <string>История анализов</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+       <zorder>scrollAreaHistory</zorder>
+       <zorder>labelHistoryTitle</zorder>
+       <zorder>btnBackHistory</zorder>
       </widget>
       <widget class="QWidget" name="pageLoading">
        <property name="styleSheet">
@@ -768,6 +857,19 @@ QPushButton#btnZoomIn:pressed {
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnToggleBboxes">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>131</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Скрыть дефекты</string>
          </property>
         </widget>
        </widget>

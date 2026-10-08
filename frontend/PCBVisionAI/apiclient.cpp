@@ -354,3 +354,156 @@ void ApiClient::getAnalysisStatus(qint64 requestId)
         }
         );
 }
+
+void ApiClient::getHistory()
+{
+    QNetworkRequest request(
+        QUrl(
+            baseUrl +
+            "/analysis-requests?limit=20&offset=0"
+            )
+        );
+
+    request.setRawHeader(
+        "ngrok-skip-browser-warning",
+        "true"
+        );
+
+    QNetworkReply *reply =
+        networkManager->get(request);
+
+    connect(
+        reply,
+        &QNetworkReply::finished,
+        this,
+        [this, reply]()
+        {
+            QByteArray responseData =
+                reply->readAll();
+
+            qDebug()
+                << "HISTORY HTTP:"
+                << reply->attribute(
+                            QNetworkRequest::HttpStatusCodeAttribute
+                            ).toInt();
+
+            qDebug()
+                << "HISTORY RAW:"
+                << QString::fromUtf8(responseData);
+
+            if (reply->error() !=
+                QNetworkReply::NoError) {
+
+                emit historyFailed(
+                    reply->errorString()
+                    );
+
+                reply->deleteLater();
+                return;
+            }
+
+            QJsonDocument document =
+                QJsonDocument::fromJson(
+                    responseData
+                    );
+
+            /*
+             * Пока намеренно не предполагаем
+             * точную структуру history-response.
+             */
+            if (document.isArray()) {
+
+                emit historyReceived(
+                    document.array()
+                    );
+
+            } else {
+
+                emit historyFailed(
+                    "Неизвестный формат истории."
+                    );
+            }
+
+            reply->deleteLater();
+        }
+        );
+}
+
+void ApiClient::getImage(qint64 imageId)
+{
+    QUrl url(
+        baseUrl +
+        "/images/" +
+        QString::number(imageId)
+        );
+
+    QNetworkRequest request(url);
+
+    request.setRawHeader(
+        "ngrok-skip-browser-warning",
+        "true"
+        );
+
+    QNetworkReply *reply =
+        networkManager->get(request);
+
+    connect(
+        reply,
+        &QNetworkReply::finished,
+        this,
+        [this, reply, imageId]()
+        {
+            int statusCode =
+                reply->attribute(
+                         QNetworkRequest::HttpStatusCodeAttribute
+                         ).toInt();
+
+            QByteArray data =
+                reply->readAll();
+
+            qDebug()
+                << "GET IMAGE HTTP:"
+                << statusCode
+                << "imageId:"
+                << imageId
+                << "bytes:"
+                << data.size();
+
+            if (statusCode >= 200 &&
+                statusCode < 300) {
+
+                QString contentType =
+                    reply->header(
+                             QNetworkRequest::ContentTypeHeader
+                             ).toString();
+
+                emit imageReceived(
+                    imageId,
+                    data,
+                    contentType
+                    );
+
+            } else {
+
+                QString errorMessage;
+
+                if (statusCode == 404) {
+                    errorMessage =
+                        "Исходное изображение анализа не найдено.";
+                } else {
+                    errorMessage =
+                        QString(
+                            "Не удалось загрузить изображение. HTTP %1"
+                            ).arg(statusCode);
+                }
+
+                emit imageReceiveFailed(
+                    imageId,
+                    errorMessage
+                    );
+            }
+
+            reply->deleteLater();
+        }
+        );
+}

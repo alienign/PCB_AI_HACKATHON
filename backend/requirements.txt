@@ -6,4 +6,7 @@ Pillow
 SQLAlchemy
 psycopg[binary]
 alembic
+pytest
+torch
+torchvision
 ultralytics==8.4.174

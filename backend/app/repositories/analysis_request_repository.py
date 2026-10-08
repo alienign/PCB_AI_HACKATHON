@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.analysis_request import AnalysisRequest
@@ -30,7 +29,7 @@ def get_analysis_request(
     return db.get(AnalysisRequest, request_id)
 
 
-def mark_analysis_processing(
+def mark_processing(
     db: Session,
     analysis_request: AnalysisRequest,
 ) -> AnalysisRequest:
@@ -40,27 +39,30 @@ def mark_analysis_processing(
         )
 
     analysis_request.request_status = "processing"
-    analysis_request.started_at = datetime.now(timezone.utc)
+    analysis_request.started_at = func.now()
 
     db.flush()
 
     return analysis_request
 
 
-def mark_analysis_failed(
+def mark_failed(
     db: Session,
     analysis_request: AnalysisRequest,
     *,
     error_code: str,
-    error_message: str,
+    error_message: str | None = None,
 ) -> AnalysisRequest:
     if analysis_request.request_status != "processing":
         raise ValueError(
             "Only processing analysis requests can fail."
         )
 
+    if not error_code:
+        raise ValueError("error_code must not be empty.")
+
     analysis_request.request_status = "failed"
-    analysis_request.finished_at = datetime.now(timezone.utc)
+    analysis_request.finished_at = func.now()
     analysis_request.error_code = error_code
     analysis_request.error_message = error_message
 

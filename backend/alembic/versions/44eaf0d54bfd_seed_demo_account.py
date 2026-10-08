@@ -19,21 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Create the demo account required by the hackathon MVP."""
-    accounts = sa.table(
-        "accounts",
-        sa.column("login", sa.Text()),
-        sa.column("display_name", sa.Text()),
-    )
-
-    op.bulk_insert(
-        accounts,
-        [
-            {
-                "login": "demo",
-                "display_name": "Demo User",
-            }
-        ],
+    """Create the demo account if it does not already exist."""
+    op.execute(
+        """
+        INSERT INTO accounts (login, display_name)
+        VALUES ('demo', 'Demo User')
+        ON CONFLICT (login) DO NOTHING
+        """
     )
 
 

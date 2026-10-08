@@ -20,6 +20,22 @@ AnalysisStatus = Literal[
 ]
 
 
+class BoundingBoxResponse(BaseModel):
+    x_min: float
+    y_min: float
+    x_max: float
+    y_max: float
+
+
+class DetectionResponse(BaseModel):
+    defect_type: str
+    confidence: float
+    bbox: BoundingBoxResponse
+
+
 class AnalysisRequestStatusResponse(BaseModel):
     request_id: int
     status: AnalysisStatus
+    detections: list[DetectionResponse] = []
+    error_code: str | None = None
+    error_message: str | None = None

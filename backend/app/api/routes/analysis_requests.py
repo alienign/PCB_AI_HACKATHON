@@ -5,8 +5,12 @@ from app.api.dependencies import get_db
 from app.schemas.analysis_request import (
     AnalysisRequestCreate,
     AnalysisRequestCreateResponse,
+    AnalysisRequestStatusResponse,
 )
-from app.services.analysis_request_service import start_analysis
+from app.services.analysis_request_service import (
+    get_analysis_status,
+    start_analysis,
+)
 
 
 router = APIRouter(
@@ -28,4 +32,23 @@ def create_analysis_request(
     return AnalysisRequestCreateResponse(
         request_id=analysis_request.analysis_request_id,
         status="created",
+    )
+
+
+@router.get(
+    "/{request_id}",
+    response_model=AnalysisRequestStatusResponse,
+)
+def read_analysis_request_status(
+    request_id: int,
+    db: Session = Depends(get_db),
+):
+    analysis_request = get_analysis_status(
+        db=db,
+        request_id=request_id,
+    )
+
+    return AnalysisRequestStatusResponse(
+        request_id=analysis_request.analysis_request_id,
+        status=analysis_request.request_status,
     )

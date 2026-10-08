@@ -2,7 +2,10 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.analysis_request import AnalysisRequest
-from app.repositories.analysis_request_repository import create_analysis_request
+from app.repositories.analysis_request_repository import (
+    create_analysis_request,
+    get_analysis_request,
+)
 from app.repositories.image_repository import get_demo_account, get_image
 
 
@@ -35,3 +38,18 @@ def start_analysis(
     except Exception:
         db.rollback()
         raise
+
+
+def get_analysis_status(
+    db: Session,
+    request_id: int,
+) -> AnalysisRequest:
+    analysis_request = get_analysis_request(db, request_id)
+
+    if analysis_request is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Analysis request not found.",
+        )
+
+    return analysis_request

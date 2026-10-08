@@ -40,8 +40,9 @@ def create_analysis_request_for_image(
             image_id=image.image_id,
         )
 
-        db.commit()
+        # Получаем актуальные значения до фиксации транзакции.
         db.refresh(analysis_request)
+        db.commit()
 
         return analysis_request
 
@@ -76,13 +77,26 @@ def start_processing(
 
         if analysis_request.request_status != "created":
             raise InvalidAnalysisRequestTransitionError(
-                "AnalysisRequest can enter processing only from created status."
+                "AnalysisRequest can enter processing "
+                "only from created status."
             )
 
-        mark_processing(db, analysis_request)
+        # Атомарный переход created -> processing.
+        # Только один конкурентный запрос может изменить статус.
+        try:
+            mark_processing(
+                db,
+                analysis_request,
+            )
+        except ValueError as error:
+            raise InvalidAnalysisRequestTransitionError(
+                "AnalysisRequest can enter processing "
+                "only from created status."
+            ) from error
 
+        # mark_processing уже выполняет db.refresh().
+        # Дополнительный refresh после commit не требуется.
         db.commit()
-        db.refresh(analysis_request)
 
         return analysis_request
 
@@ -106,11 +120,14 @@ def fail_processing(
 
         if analysis_request.request_status != "processing":
             raise InvalidAnalysisRequestTransitionError(
-                "AnalysisRequest can enter failed only from processing status."
+                "AnalysisRequest can enter failed "
+                "only from processing status."
             )
 
         if not error_code:
-            raise ValueError("error_code must not be empty.")
+            raise ValueError(
+                "error_code must not be empty."
+            )
 
         mark_failed(
             db,
@@ -119,8 +136,10 @@ def fail_processing(
             error_message=error_message,
         )
 
-        db.commit()
+        # Получаем значения, сформированные PostgreSQL,
+        # пока транзакция ещё не зафиксирована.
         db.refresh(analysis_request)
+        db.commit()
 
         return analysis_request
 
@@ -135,7 +154,10 @@ def start_analysis(
     image_id: int,
 ) -> AnalysisRequest:
     try:
-        return create_analysis_request_for_image(db, image_id)
+        return create_analysis_request_for_image(
+            db,
+            image_id,
+        )
     except ImageNotFoundError:
         raise HTTPException(
             status_code=404,
@@ -148,7 +170,10 @@ def get_analysis_status(
     request_id: int,
 ) -> AnalysisRequest:
     try:
-        return get_analysis_request_by_id(db, request_id)
+        return get_analysis_request_by_id(
+            db,
+            request_id,
+        )
     except AnalysisRequestNotFoundError:
         raise HTTPException(
             status_code=404,
@@ -161,7 +186,10 @@ def begin_analysis_processing(
     request_id: int,
 ) -> AnalysisRequest:
     try:
-        return start_processing(db, request_id)
+        return start_processing(
+            db,
+            request_id,
+        )
     except AnalysisRequestNotFoundError:
         raise HTTPException(
             status_code=404,

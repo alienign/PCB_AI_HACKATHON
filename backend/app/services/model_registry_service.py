@@ -65,9 +65,8 @@ def register_ml_model(db: Session) -> ModelVersion:
             weights_hash=weights_hash,
         )
 
-        db.commit()
-        db.refresh(model)
-
+        # Транзакцией управляет вызывающий сервис.
+        # Не выполняем commit() внутри регистрации модели.
         return model
 
     except Exception:

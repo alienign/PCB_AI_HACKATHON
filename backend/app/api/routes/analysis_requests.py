@@ -1,3 +1,9 @@
+from fastapi import Query
+
+from app.repositories.image_repository import get_demo_account
+from app.schemas.analysis_request import AnalysisHistoryItemResponse
+from app.services.analysis_history_service import get_analysis_history
+
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
@@ -105,4 +111,25 @@ def read_analysis_request_status(
         detections=detections,
         error_code=result["error_code"],
         error_message=result["error_message"],
+    )
+
+
+@router.get(
+    "",
+    response_model=list[AnalysisHistoryItemResponse],
+)
+def read_analysis_history(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+):
+    """Возвращает историю анализов demo-пользователя."""
+
+    account = get_demo_account(db)
+
+    return get_analysis_history(
+        db=db,
+        account_id=account.account_id,
+        limit=limit,
+        offset=offset,
     )

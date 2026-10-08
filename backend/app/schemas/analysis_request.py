@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AnalysisRequestCreate(BaseModel):
@@ -36,6 +37,16 @@ class DetectionResponse(BaseModel):
 class AnalysisRequestStatusResponse(BaseModel):
     request_id: int
     status: AnalysisStatus
-    detections: list[DetectionResponse] = []
+    detections: list[DetectionResponse] = Field(default_factory=list)
     error_code: str | None = None
     error_message: str | None = None
+
+
+class AnalysisHistoryItemResponse(BaseModel):
+    request_id: int
+    image_id: int
+    analysis_id: int | None
+    status: AnalysisStatus
+    created_at: datetime
+    finished_at: datetime | None
+    detections_count: int

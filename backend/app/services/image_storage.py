@@ -17,11 +17,18 @@ class ImageStorage:
         storage_key = f"{uuid4().hex}{extension}"
         destination = self.storage_path / storage_key
 
-        await file.seek(0)
-        content = await file.read()
-        destination.write_bytes(content)
+        try:
+            await file.seek(0)
+            content = await file.read()
 
-        return storage_key
+            destination.write_bytes(content)
+
+            return storage_key
+
+        except Exception:
+            # Удаляем частично записанный файл при ошибке.
+            destination.unlink(missing_ok=True)
+            raise
 
     def get_path(self, storage_key: str) -> Path:
         return self.storage_path / storage_key

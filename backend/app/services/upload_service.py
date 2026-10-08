@@ -22,7 +22,7 @@ async def save_uploaded_image(
     storage_key: str | None = None
 
     try:
-        # 1. Получаем реальный demo account из PostgreSQL.
+        # 1. Получаем demo account из PostgreSQL.
         account = get_demo_account(db)
 
         # 2. Для каждой загрузки создаём новую Board.
@@ -32,7 +32,7 @@ async def save_uploaded_image(
             original_filename=original_filename,
         )
 
-        # 3. Физически сохраняем изображение.
+        # 3. Сохраняем изображение на диск.
         storage_key = await storage.save(file)
 
         file_path = storage.get_path(storage_key)
@@ -49,17 +49,20 @@ async def save_uploaded_image(
             file_size=file_size,
         )
 
-        # 5. Фиксируем Board + Image одной транзакцией.
+        # 5. Фиксируем Board и Image одной транзакцией.
         db.commit()
-        db.refresh(image)
 
+        # db.refresh(image) здесь не нужен:
+        # image_id уже получен при db.flush() в create_image(),
+        # а SessionLocal настроен с expire_on_commit=False.
         return image
 
     except Exception:
+        # Откатываем незавершённую транзакцию.
         db.rollback()
 
-        # Если БД упала после сохранения файла,
-        # удаляем файл, чтобы не оставлять мусор.
+        # Удаляем сохранённый файл, если операция
+        # завершилась ошибкой до успешного commit().
         if storage_key is not None:
             file_path = storage.get_path(storage_key)
 

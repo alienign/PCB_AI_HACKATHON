@@ -1,6 +1,16 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Identity, Text, func
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Index,
+    Text,
+    column,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -17,6 +27,11 @@ class Board(Base):
         CheckConstraint(
             "serial_number IS NULL OR btrim(serial_number) <> ''",
             name="ck_boards_serial_number_not_blank",
+        ),
+        Index(
+            "ix_boards_created_by_account_created_at",
+            "created_by_account_id",
+            column("created_at").desc(),
         ),
     )
 

@@ -1,4 +1,11 @@
-from sqlalchemy import BigInteger, CheckConstraint, Float, ForeignKey, Identity
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    Float,
+    ForeignKey,
+    Identity,
+    Index,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -36,6 +43,14 @@ class Detection(Base):
             "bbox_y + bbox_height <= 1.0",
             name="ck_detections_bbox_vertical_bounds",
         ),
+        Index(
+            "ix_detections_analysis",
+            "analysis_id",
+        ),
+        Index(
+            "ix_detections_defect_type",
+            "defect_type_id",
+        ),
     )
 
     detection_id: Mapped[int] = mapped_column(
@@ -66,7 +81,10 @@ class Detection(Base):
         nullable=False,
     )
 
-    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    confidence: Mapped[float] = mapped_column(
+        Float,
+        nullable=False,
+    )
 
     bbox_x: Mapped[float] = mapped_column(Float, nullable=False)
     bbox_y: Mapped[float] = mapped_column(Float, nullable=False)

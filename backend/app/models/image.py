@@ -6,8 +6,10 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Identity,
+    Index,
     Text,
     UniqueConstraint,
+    column,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -42,6 +44,15 @@ class Image(Base):
         CheckConstraint(
             "file_hash IS NULL OR btrim(file_hash) <> ''",
             name="ck_images_file_hash_not_blank",
+        ),
+        Index(
+            "ix_images_board_created_at",
+            "board_id",
+            column("created_at").desc(),
+        ),
+        Index(
+            "ix_images_uploaded_by_account",
+            "uploaded_by_account_id",
         ),
     )
 

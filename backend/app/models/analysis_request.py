@@ -6,7 +6,9 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Identity,
+    Index,
     Text,
+    column,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -76,6 +78,21 @@ class AnalysisRequest(Base):
             """,
             name="ck_analysis_requests_state_consistency",
         ),
+        Index(
+            "ix_analysis_requests_account_created_at",
+            "account_id",
+            column("created_at").desc(),
+        ),
+        Index(
+            "ix_analysis_requests_image_created_at",
+            "image_id",
+            column("created_at").desc(),
+        ),
+        Index(
+            "ix_analysis_requests_status_created_at",
+            "request_status",
+            column("created_at").desc(),
+        ),
     )
 
     analysis_request_id: Mapped[int] = mapped_column(
@@ -128,5 +145,12 @@ class AnalysisRequest(Base):
         nullable=True,
     )
 
-    error_code: Mapped[str | None] = mapped_column(Text, nullable=True)
-    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_code: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    error_message: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )

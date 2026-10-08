@@ -1,6 +1,14 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Identity, UniqueConstraint, func
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Index,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -13,6 +21,10 @@ class Analysis(Base):
         UniqueConstraint(
             "analysis_request_id",
             name="uq_analyses_analysis_request",
+        ),
+        Index(
+            "ix_analyses_model_version",
+            "model_version_id",
         ),
     )
 

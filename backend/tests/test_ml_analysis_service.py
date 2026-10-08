@@ -331,3 +331,129 @@ def test_duplicate_analysis_rejected(db, monkeypatch):
     db.refresh(request)
 
     assert request.request_status == "completed"
+
+
+def test_missing_image_file_marks_request_failed(
+    db,
+    monkeypatch,
+    tmp_path,
+):
+    """
+    Если изображение отсутствует на диске:
+    - анализ завершается ошибкой;
+    - запрос получает статус failed;
+    - запись Analysis не создаётся.
+    """
+    from app.services.ml_service import PCBDefectModel
+
+    request = create_request(db)
+
+    missing_path = tmp_path / "missing_image.jpg"
+
+    class FakeStorage:
+        def get_path(self, storage_key):
+            return missing_path
+
+    monkeypatch.setattr(
+        ml_module,
+        "ImageStorage",
+        lambda: FakeStorage(),
+    )
+
+    # Не загружаем YOLO: проверяем непосредственно
+    # существующую логику проверки файла.
+    model = object.__new__(PCBDefectModel)
+
+    monkeypatch.setattr(
+        ml_module,
+        "analyze",
+        lambda path: model.predict(path),
+    )
+
+    with pytest.raises(
+        FileNotFoundError,
+        match="Image not found",
+    ):
+        run_analysis(
+            db,
+            request.analysis_request_id,
+        )
+
+    db.refresh(request)
+
+    assert request.request_status == "failed"
+    assert request.error_code == "ANALYSIS_FAILED"
+    assert "Image not found" in request.error_message
+
+    analysis = db.scalar(
+        select(Analysis).where(
+            Analysis.analysis_request_id
+            == request.analysis_request_id
+        )
+    )
+
+    assert analysis is None
+
+
+def test_corrupted_image_marks_request_failed(
+    db,
+    monkeypatch,
+    tmp_path,
+):
+    """
+    Повреждённое изображение:
+    - существует на диске;
+    - не может быть декодировано;
+    - переводит запрос в failed;
+    - не создаёт Analysis.
+    """
+    from PIL import Image as PILImage
+    from PIL import UnidentifiedImageError
+
+    request = create_request(db)
+
+    corrupted_path = tmp_path / "corrupted.jpg"
+    corrupted_path.write_bytes(
+        b"this is not a valid JPEG image"
+    )
+
+    class FakeStorage:
+        def get_path(self, storage_key):
+            return corrupted_path
+
+    monkeypatch.setattr(
+        ml_module,
+        "ImageStorage",
+        lambda: FakeStorage(),
+    )
+
+    def analyze_corrupted_image(path):
+        with PILImage.open(path) as image:
+            image.verify()
+        return []
+
+    monkeypatch.setattr(
+        ml_module,
+        "analyze",
+        analyze_corrupted_image,
+    )
+
+    with pytest.raises(UnidentifiedImageError):
+        run_analysis(
+            db,
+            request.analysis_request_id,
+        )
+
+    db.refresh(request)
+
+    assert request.request_status == "failed"
+    assert request.error_code == "ANALYSIS_FAILED"
+
+    analysis = db.scalar(
+        select(Analysis).where(
+            Analysis.analysis_request_id
+            == request.analysis_request_id
+        )
+    )
+
+    assert analysis is None

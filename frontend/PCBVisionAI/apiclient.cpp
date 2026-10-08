@@ -9,6 +9,8 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUrl>
+#include <QJsonArray>
+#include <QDebug>
 
 ApiClient::ApiClient(QObject *parent)
     : QObject(parent)
@@ -42,9 +44,19 @@ void ApiClient::uploadImage(const QString &filePath)
         disposition
         );
 
+    QString suffix = fileInfo.suffix().toLower();
+
+    QString contentType;
+
+    if (suffix == "png") {
+        contentType = "image/png";
+    } else {
+        contentType = "image/jpeg";
+    }
+
     filePart.setHeader(
         QNetworkRequest::ContentTypeHeader,
-        "application/octet-stream"
+        contentType
         );
 
     file->setParent(multiPart);
@@ -54,6 +66,11 @@ void ApiClient::uploadImage(const QString &filePath)
 
     QNetworkRequest request(
         QUrl(baseUrl + "/images")
+        );
+
+    request.setRawHeader(
+        "ngrok-skip-browser-warning",
+        "true"
         );
 
     QNetworkReply *reply =
@@ -121,6 +138,217 @@ void ApiClient::uploadImage(const QString &filePath)
                     .toLongLong();
 
             emit imageUploaded(imageId);
+
+            reply->deleteLater();
+        }
+        );
+}
+
+void ApiClient::startAnalysis(qint64 imageId)
+{
+    QNetworkRequest request(
+        QUrl(baseUrl + "/analysis-requests")
+        );
+
+    request.setRawHeader(
+        "ngrok-skip-browser-warning",
+        "true"
+        );
+
+    request.setHeader(
+        QNetworkRequest::ContentTypeHeader,
+        "application/json"
+        );
+
+    QJsonObject jsonObject;
+
+    jsonObject["image_id"] = imageId;
+
+    QJsonDocument jsonDocument(jsonObject);
+
+    QByteArray requestData =
+        jsonDocument.toJson(QJsonDocument::Compact);
+
+    QNetworkReply *reply =
+        networkManager->post(
+            request,
+            requestData
+            );
+
+    connect(
+        reply,
+        &QNetworkReply::finished,
+        this,
+        [this, reply]()
+        {
+            QByteArray responseData =
+                reply->readAll();
+
+            if (reply->error() != QNetworkReply::NoError) {
+
+                QString errorMessage =
+                    QString::fromUtf8(responseData);
+
+                if (errorMessage.isEmpty()) {
+                    errorMessage =
+                        reply->errorString();
+                }
+
+                emit analysisStartFailed(
+                    errorMessage
+                    );
+
+                reply->deleteLater();
+                return;
+            }
+
+            QJsonParseError parseError;
+
+            QJsonDocument document =
+                QJsonDocument::fromJson(
+                    responseData,
+                    &parseError
+                    );
+
+            if (parseError.error != QJsonParseError::NoError ||
+                !document.isObject()) {
+
+                emit analysisStartFailed(
+                    "Backend вернул некорректный ответ при запуске анализа."
+                    );
+
+                reply->deleteLater();
+                return;
+            }
+
+            QJsonObject object =
+                document.object();
+
+            if (!object.contains("request_id") ||
+                !object.contains("status")) {
+
+                emit analysisStartFailed(
+                    "В ответе backend отсутствует request_id или status."
+                    );
+
+                reply->deleteLater();
+                return;
+            }
+
+            qint64 requestId =
+                object.value("request_id")
+                    .toVariant()
+                    .toLongLong();
+
+            QString status =
+                object.value("status")
+                    .toString();
+
+            emit analysisStarted(
+                requestId,
+                status
+                );
+
+            reply->deleteLater();
+        }
+        );
+}
+
+void ApiClient::getAnalysisStatus(qint64 requestId)
+{
+    QNetworkRequest request(
+        QUrl(
+            baseUrl
+            + "/analysis-requests/"
+            + QString::number(requestId)
+            )
+        );
+
+    request.setRawHeader(
+        "ngrok-skip-browser-warning",
+        "true"
+        );
+
+    QNetworkReply *reply =
+        networkManager->get(request);
+
+    connect(
+        reply,
+        &QNetworkReply::finished,
+        this,
+        [this, reply, requestId]()
+        {
+            QByteArray responseData =
+                reply->readAll();
+
+            qDebug() << "GET status HTTP:"
+                     << reply->attribute(
+                                 QNetworkRequest::HttpStatusCodeAttribute
+                                 ).toInt();
+
+            qDebug() << "GET status RAW:"
+                     << QString::fromUtf8(responseData);
+
+            if (reply->error() != QNetworkReply::NoError) {
+
+                QString errorMessage =
+                    QString::fromUtf8(responseData);
+
+                if (errorMessage.isEmpty()) {
+                    errorMessage =
+                        reply->errorString();
+                }
+
+                emit analysisStatusFailed(
+                    errorMessage
+                    );
+
+                reply->deleteLater();
+                return;
+            }
+
+            QJsonParseError parseError;
+
+            QJsonDocument document =
+                QJsonDocument::fromJson(
+                    responseData,
+                    &parseError
+                    );
+
+            if (parseError.error !=
+                    QJsonParseError::NoError ||
+                !document.isObject()) {
+
+                emit analysisStatusFailed(
+                    "Backend вернул некорректный ответ статуса анализа."
+                    );
+
+                reply->deleteLater();
+                return;
+            }
+
+            QJsonObject object =
+                document.object();
+
+            QString status =
+                object.value("status").toString();
+
+            QJsonArray detections =
+                object.value("detections").toArray();
+
+            QString errorCode =
+                object.value("error_code").toString();
+
+            QString errorMessage =
+                object.value("error_message").toString();
+
+            emit analysisStatusReceived(
+                requestId,
+                status,
+                detections,
+                errorCode,
+                errorMessage
+                );
 
             reply->deleteLater();
         }

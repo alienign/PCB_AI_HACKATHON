@@ -253,8 +253,8 @@ QPushButton#btnStart:disabled {
               </property>
               <property name="maximumSize">
                <size>
-                <width>43</width>
-                <height>48</height>
+                <width>48</width>
+                <height>40</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -383,10 +383,10 @@ QPushButton#btnHistory:pressed {
        <widget class="QLabel" name="labelLoadingBackground">
         <property name="geometry">
          <rect>
-          <x>4</x>
-          <y>4</y>
-          <width>781</width>
-          <height>541</height>
+          <x>-6</x>
+          <y>-6</y>
+          <width>791</width>
+          <height>551</height>
          </rect>
         </property>
         <property name="text">
@@ -580,9 +580,18 @@ QPushButton#btnBackResult:pressed {
           <rect>
            <x>10</x>
            <y>10</y>
-           <width>161</width>
-           <height>20</height>
+           <width>151</width>
+           <height>31</height>
           </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel#labelDefectsTitle {
+    color: #EAF7F4;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+}</string>
          </property>
          <property name="text">
           <string>Обнаруженные дефекты</string>
@@ -592,9 +601,9 @@ QPushButton#btnBackResult:pressed {
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>40</y>
+           <y>60</y>
            <width>211</width>
-           <height>411</height>
+           <height>391</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -616,13 +625,39 @@ QScrollArea &gt; QWidget &gt; QWidget {
             <x>0</x>
             <y>0</y>
             <width>211</width>
-            <height>411</height>
+            <height>391</height>
            </rect>
           </property>
           <property name="styleSheet">
            <string notr="true">background: transparent;</string>
           </property>
          </widget>
+        </widget>
+        <widget class="QLabel" name="labelDefectsCount">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>10</y>
+           <width>31</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel#labelDefectsCount {
+    background-color: rgba(16, 191, 160, 170);
+    color: white;
+    border: 1px solid rgba(80, 255, 220, 120);
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
         </widget>
        </widget>
        <widget class="QFrame" name="frameResultToolbar">
@@ -650,11 +685,30 @@ QScrollArea &gt; QWidget &gt; QWidget {
         <widget class="QPushButton" name="btnZoomOut">
          <property name="geometry">
           <rect>
-           <x>400</x>
+           <x>410</x>
            <y>10</y>
            <width>21</width>
            <height>22</height>
           </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton#btnZoomOut {
+    background-color: rgba(14, 42, 38, 180);
+    color: #EAF7F4;
+    border: 1px solid rgba(55, 120, 108, 170);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+QPushButton#btnZoomOut:hover {
+    background-color: rgba(24, 75, 66, 220);
+    border: 1px solid #20D6A3;
+}
+
+QPushButton#btnZoomOut:pressed {
+    background-color: rgba(8, 30, 27, 230);
+}</string>
          </property>
          <property name="text">
           <string>−</string>
@@ -668,6 +722,25 @@ QScrollArea &gt; QWidget &gt; QWidget {
            <width>21</width>
            <height>22</height>
           </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton#btnZoomIn {
+    background-color: rgba(14, 42, 38, 180);
+    color: #EAF7F4;
+    border: 1px solid rgba(55, 120, 108, 170);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+QPushButton#btnZoomIn:hover {
+    background-color: rgba(24, 75, 66, 220);
+    border: 1px solid #20D6A3;
+}
+
+QPushButton#btnZoomIn:pressed {
+    background-color: rgba(8, 30, 27, 230);
+}</string>
          </property>
          <property name="text">
           <string>+</string>
@@ -725,8 +798,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
       </widget>
       <widget class="QWidget" name="pageUpload">
        <property name="styleSheet">
-        <string notr="true">QWidget#pageUpload {
-    background-color: #061716;
+        <string notr="true">QWidget#pageLoading {
+    background: transparent;
 }</string>
        </property>
        <widget class="QPushButton" name="btnBackUpload">
@@ -881,6 +954,28 @@ QPushButton:pressed {
          </property>
         </widget>
        </widget>
+       <widget class="QLabel" name="labelUploadBackground">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>791</width>
+          <height>551</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="pixmap">
+         <pixmap resource="resources.qrc">:/images/images/back_image2.png</pixmap>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <zorder>labelUploadBackground</zorder>
+       <zorder>btnBackUpload</zorder>
+       <zorder>frameUploadCard</zorder>
       </widget>
      </widget>
     </item>

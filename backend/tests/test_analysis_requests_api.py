@@ -378,3 +378,41 @@ def test_history_invalid_offset(client):
     )
 
     assert response.status_code == 422
+
+
+def test_get_failed_analysis_request(client, test_image):
+    """GET возвращает ошибку анализа для отображения в Qt."""
+    from app.services.analysis_request_service import (
+        create_analysis_request_for_image,
+        start_processing,
+        fail_processing,
+    )
+
+    with SessionLocal() as db:
+        request = create_analysis_request_for_image(
+            db, image_id=test_image
+        )
+        request_id = request.analysis_request_id
+
+        start_processing(db, request_id)
+
+        fail_processing(
+            db,
+            request_id,
+            error_code="ANALYSIS_FAILED",
+            error_message="Test ML analysis failure",
+        )
+
+    response = client.get(
+        f"/analysis-requests/{request_id}"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["request_id"] == request_id
+    assert data["status"] == "failed"
+    assert data["detections"] == []
+    assert data["error_code"] == "ANALYSIS_FAILED"
+    assert data["error_message"] == "Test ML analysis failure"

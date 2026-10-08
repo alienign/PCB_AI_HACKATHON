@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <QVBoxLayout>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,6 +23,10 @@ private slots:
     void chooseImage();
 
 private:
+    void addDefectCard(const QString &name, double confidence);
+    void clearDefectCards();
+    QVBoxLayout *verticalLayoutDefects;
+
     Ui::MainWindow *ui;
 
     QString selectedImagePath;

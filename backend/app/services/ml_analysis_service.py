@@ -1,3 +1,6 @@
+import logging
+from time import perf_counter
+
 from sqlalchemy.orm import Session
 
 from app.models.analysis import Analysis
@@ -11,6 +14,9 @@ from app.services.analysis_result_service import save_analysis_result
 from app.services.image_storage import ImageStorage
 from app.services.ml_service import analyze
 from app.services.model_registry_service import register_ml_model
+
+
+logger = logging.getLogger("uvicorn.error")
 
 
 def run_analysis(
@@ -31,6 +37,13 @@ def run_analysis(
     переводит запрос в failed.
     """
 
+    start_time = perf_counter()
+
+    logger.info(
+        "Analysis request %s: starting",
+        request_id,
+    )
+
     request = get_analysis_request_by_id(
         db,
         request_id,
@@ -38,6 +51,12 @@ def run_analysis(
 
     # Проверяем переход created -> processing.
     start_processing(db, request_id)
+
+    logger.info(
+        "Analysis request %s: processing, image_id=%s",
+        request_id,
+        request.image_id,
+    )
 
     try:
         image = get_image(
@@ -59,6 +78,12 @@ def run_analysis(
         # Запускаем нейросеть.
         detections = analyze(image_path)
 
+        logger.info(
+            "Analysis request %s: YOLO returned %s detections",
+            request_id,
+            len(detections),
+        )
+
         # Получаем запись о версии модели.
         model_version = register_ml_model(db)
 
@@ -70,12 +95,28 @@ def run_analysis(
             detections=detections,
         )
 
+        elapsed = perf_counter() - start_time
+
+        logger.info(
+            "Analysis request %s: completed, "
+            "detections=%s, duration=%.2fs",
+            request_id,
+            len(detections),
+            elapsed,
+        )
+
         return analysis
 
     except Exception as error:
         db.rollback()
 
-        # Сохраняем информацию об ошибке.
+        logger.exception(
+            "Analysis request %s: failed",
+            request_id,
+        )
+
+        # Сохраняем существующее поведение:
+        # фиксируем ошибку анализа в PostgreSQL.
         fail_processing(
             db,
             request_id,

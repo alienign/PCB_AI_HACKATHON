@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/board_soft.png</file>
+        <file>images/board_soft1.png</file>
+        <file>images/back_image.png</file>
+        <file>images/back_image2.png</file>
+        <file>images/scan_plate.png</file>
+        <file>images/icon_history.png</file>
+    </qresource>
+</RCC>

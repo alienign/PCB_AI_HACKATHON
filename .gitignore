@@ -12,7 +12,6 @@ __pycache__/
 
 backend/storage/
 
-
 # ML model weights
 backend/models/*.pt
 # Local ML model weights
@@ -20,3 +19,8 @@ backend/models/*.pt
 
 # Docker local data
 /docker-data/
+
+# Qt Creator / CMake
+frontend/PCBVisionAI/build/
+frontend/PCBVisionAI/.qtcreator/
+*.user

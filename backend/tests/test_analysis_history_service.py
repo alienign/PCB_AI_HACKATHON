@@ -6,20 +6,66 @@ from app.services.analysis_history_service import get_analysis_history
 
 
 @pytest.fixture
-def db():
-    from app.db.session import SessionLocal
-
-    with SessionLocal() as session:
-        yield session
+def db(safe_test_db):
+    """Используем только проверенную тестовую БД."""
+    yield safe_test_db
 
 
-def test_history_returns_existing_requests(db):
-    account_id = db.scalar(
-        select(AnalysisRequest.account_id).limit(1)
+
+@pytest.fixture
+def history_data(db):
+    """Создаёт три запроса анализа в тестовой транзакции."""
+    from uuid import uuid4
+
+    from app.models.account import Account
+    from app.models.board import Board
+    from app.models.image import Image
+
+    suffix = uuid4().hex
+
+    account = Account(
+        login=f"history_fixture_{suffix}",
+        display_name="History Fixture",
     )
+    db.add(account)
+    db.flush()
 
-    if account_id is None:
-        pytest.skip("No analysis requests in test database")
+    board = Board(
+        created_by_account_id=account.account_id,
+        board_label=f"history-board-{suffix}",
+    )
+    db.add(board)
+    db.flush()
+
+    image = Image(
+        board_id=board.board_id,
+        uploaded_by_account_id=account.account_id,
+        storage_key=f"history-test/{suffix}.jpg",
+        original_filename="test.jpg",
+        mime_type="image/jpeg",
+        file_size=123,
+    )
+    db.add(image)
+    db.flush()
+
+    request_ids = []
+
+    for _ in range(3):
+        request = AnalysisRequest(
+            account_id=account.account_id,
+            image_id=image.image_id,
+        )
+        db.add(request)
+        db.flush()
+        request_ids.append(request.analysis_request_id)
+
+    return {
+        "account_id": account.account_id,
+        "request_ids": request_ids,
+    }
+
+def test_history_returns_existing_requests(db, history_data):
+    account_id = history_data["account_id"]
 
     history = get_analysis_history(db, account_id)
 
@@ -32,13 +78,8 @@ def test_history_returns_existing_requests(db):
         assert item["detections_count"] >= 0
 
 
-def test_history_sorted_newest_first(db):
-    account_id = db.scalar(
-        select(AnalysisRequest.account_id).limit(1)
-    )
-
-    if account_id is None:
-        pytest.skip("No analysis requests in test database")
+def test_history_sorted_newest_first(db, history_data):
+    account_id = history_data["account_id"]
 
     history = get_analysis_history(db, account_id)
 
@@ -53,13 +94,8 @@ def test_history_sorted_newest_first(db):
     )
 
 
-def test_history_pagination(db):
-    account_id = db.scalar(
-        select(AnalysisRequest.account_id).limit(1)
-    )
-
-    if account_id is None:
-        pytest.skip("No analysis requests in test database")
+def test_history_pagination(db, history_data):
+    account_id = history_data["account_id"]
 
     first_page = get_analysis_history(
         db,
@@ -75,8 +111,8 @@ def test_history_pagination(db):
         offset=1,
     )
 
-    assert len(first_page) <= 1
-    assert len(second_page) <= 1
+    assert len(first_page) == 1
+    assert len(second_page) == 1
 
     if first_page and second_page:
         assert (
@@ -127,19 +163,14 @@ def test_history_invalid_parameters(
         )
 
 
-def test_history_uses_single_sql_query(db):
+def test_history_uses_single_sql_query(db, history_data):
     """
     Получение истории должно выполнять один SQL-запрос,
     независимо от количества анализов.
     """
     from sqlalchemy import event
 
-    account_id = db.scalar(
-        select(AnalysisRequest.account_id).limit(1)
-    )
-
-    if account_id is None:
-        pytest.skip("No analysis requests in test database")
+    account_id = history_data["account_id"]
 
     engine = db.get_bind()
     statements = []

@@ -12,58 +12,114 @@ from app.models.model_version import ModelVersion
 from app.services.analysis_query_service import get_analysis_result
 
 
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
 
-if not TEST_DATABASE_URL:
-    pytest.skip(
-        "TEST_DATABASE_URL is required",
-        allow_module_level=True,
-    )
+@pytest.fixture
+def db(safe_test_db):
+    """Используем только проверенную тестовую БД."""
+    yield safe_test_db
 
-
-engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True)
-
-TestSessionLocal = sessionmaker(
-    bind=engine,
-    autoflush=False,
-    expire_on_commit=False,
-)
 
 
 @pytest.fixture
-def db():
-    session = TestSessionLocal()
+def analysis_request_data(db):
+    """Создаёт тестовый запрос анализа без сохранения изменений в БД."""
+    from uuid import uuid4
 
-    try:
-        yield session
-    finally:
-        session.rollback()
-        session.close()
+    from app.models.account import Account
+    from app.models.board import Board
+    from app.models.image import Image
 
+    suffix = uuid4().hex
 
-def test_completed_analysis_with_detections(db):
-    """
-    Проверяем чтение существующего завершённого анализа.
-    Используем результаты ранее выполненного сквозного теста.
-    """
-
-    request = db.scalar(
-        select(AnalysisRequest)
-        .where(AnalysisRequest.request_status == "completed")
-        .join(
-            Analysis,
-            Analysis.analysis_request_id
-            == AnalysisRequest.analysis_request_id,
-        )
-        .join(
-            Detection,
-            Detection.analysis_id == Analysis.analysis_id,
-        )
-        .limit(1)
+    account = Account(
+        login=f"query_test_{suffix}",
+        display_name="Query Test",
     )
+    db.add(account)
+    db.flush()
 
-    if request is None:
-        pytest.skip("No completed analysis with detections")
+    board = Board(
+        created_by_account_id=account.account_id,
+        board_label=f"query-board-{suffix}",
+    )
+    db.add(board)
+    db.flush()
+
+    image = Image(
+        board_id=board.board_id,
+        uploaded_by_account_id=account.account_id,
+        storage_key=f"query-test/{suffix}.jpg",
+        original_filename="test.jpg",
+        mime_type="image/jpeg",
+        file_size=123,
+    )
+    db.add(image)
+    db.flush()
+
+    request = AnalysisRequest(
+        account_id=account.account_id,
+        image_id=image.image_id,
+        request_status="created",
+    )
+    db.add(request)
+    db.flush()
+
+    return request
+
+
+@pytest.fixture
+def completed_analysis_data(db, analysis_request_data):
+    """Создаёт завершённый анализ с одним обнаруженным дефектом."""
+    from datetime import datetime, timedelta, timezone
+    from uuid import uuid4
+
+    suffix = uuid4().hex
+    request = analysis_request_data
+
+    model = ModelVersion(
+        model_name=f"pytest_model_{suffix}",
+        version_name="1.0",
+    )
+    db.add(model)
+    db.flush()
+
+    defect_type = DefectType(
+        defect_code=f"pytest_defect_{suffix}",
+        defect_name="Test Defect",
+    )
+    db.add(defect_type)
+    db.flush()
+
+    now = datetime.now(timezone.utc)
+    request.request_status = "completed"
+    request.started_at = now
+    request.finished_at = now + timedelta(seconds=1)
+    db.flush()
+
+    analysis = Analysis(
+        analysis_request_id=request.analysis_request_id,
+        model_version_id=model.model_version_id,
+    )
+    db.add(analysis)
+    db.flush()
+
+    detection = Detection(
+        analysis_id=analysis.analysis_id,
+        defect_type_id=defect_type.defect_type_id,
+        confidence=0.95,
+        bbox_x=0.1,
+        bbox_y=0.2,
+        bbox_width=0.3,
+        bbox_height=0.4,
+    )
+    db.add(detection)
+    db.flush()
+
+    return request
+
+def test_completed_analysis_with_detections(db, completed_analysis_data):
+    """Проверяем результат завершённого анализа с дефектом."""
+    request = completed_analysis_data
 
     result = get_analysis_result(
         db,
@@ -74,68 +130,25 @@ def test_completed_analysis_with_detections(db):
     assert result["status"] == "completed"
     assert result["analysis_id"] is not None
     assert result["model"] is not None
-    assert result["detections_count"] > 0
+    assert result["detections_count"] == 1
+    assert len(result["detections"]) == 1
 
-    for detection in result["detections"]:
-        assert detection["defect_code"]
-        assert 0 <= detection["confidence"] <= 1
+    detection = result["detections"][0]
 
-        bbox = detection["bbox"]
+    assert detection["defect_code"]
+    assert 0 <= detection["confidence"] <= 1
 
-        assert 0 <= bbox["x"] <= 1
-        assert 0 <= bbox["y"] <= 1
-        assert 0 < bbox["width"] <= 1
-        assert 0 < bbox["height"] <= 1
+    bbox = detection["bbox"]
+
+    assert 0 <= bbox["x"] <= 1
+    assert 0 <= bbox["y"] <= 1
+    assert 0 < bbox["width"] <= 1
+    assert 0 < bbox["height"] <= 1
 
 
-def test_created_request_without_results(db):
-    """
-    Проверяем новый запрос, анализ которого ещё не начался.
-    Тест самостоятельно создаёт необходимые записи.
-    """
-    from uuid import uuid4
-
-    from app.models.account import Account
-    from app.models.board import Board
-    from app.models.image import Image
-
-    account = db.scalar(
-        select(Account).where(
-            Account.login == "demo",
-            Account.is_active.is_(True),
-        )
-    )
-
-    assert account is not None
-
-    board = Board(
-        created_by_account_id=account.account_id,
-        board_label="pytest-query-board",
-    )
-
-    db.add(board)
-    db.flush()
-
-    image = Image(
-        board_id=board.board_id,
-        uploaded_by_account_id=account.account_id,
-        storage_key=f"pytest-query/{uuid4()}.jpg",
-        original_filename="test.jpg",
-        mime_type="image/jpeg",
-        file_size=123,
-    )
-
-    db.add(image)
-    db.flush()
-
-    request = AnalysisRequest(
-        account_id=account.account_id,
-        image_id=image.image_id,
-        request_status="created",
-    )
-
-    db.add(request)
-    db.flush()
+def test_created_request_without_results(db, analysis_request_data):
+    """Новый запрос без результатов анализа."""
+    request = analysis_request_data
 
     result = get_analysis_result(
         db,
@@ -148,9 +161,6 @@ def test_created_request_without_results(db):
     assert result["model"] is None
     assert result["detections_count"] == 0
     assert result["detections"] == []
-
-    # Откатываем тестовые данные.
-    db.rollback()
 
 
 def test_nonexistent_request(db):

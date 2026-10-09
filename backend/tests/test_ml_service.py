@@ -39,3 +39,44 @@ def test_missing_image_is_rejected(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         model.predict(missing_image)
+
+
+
+def test_valid_checkpoint_is_loaded(tmp_path, monkeypatch):
+    from unittest.mock import Mock
+    from app.services import ml_service
+
+    weights = tmp_path / "best.pt"
+    weights.write_bytes(b"trusted-test-checkpoint")
+
+    expected_hash = ml_service.calculate_sha256(weights)
+
+    monkeypatch.setattr(
+        ml_service,
+        "TRUSTED_MODEL_SHA256",
+        expected_hash,
+    )
+
+    fake_yolo = Mock()
+    monkeypatch.setattr(ml_service, "YOLO", fake_yolo)
+
+    model = PCBDefectModel(weights)
+
+    fake_yolo.assert_called_once_with(str(weights))
+    assert model.model is fake_yolo.return_value
+
+
+def test_invalid_checkpoint_is_rejected_before_yolo(tmp_path, monkeypatch):
+    from unittest.mock import Mock
+    from app.services import ml_service
+
+    weights = tmp_path / "best.pt"
+    weights.write_bytes(b"untrusted-checkpoint")
+
+    fake_yolo = Mock()
+    monkeypatch.setattr(ml_service, "YOLO", fake_yolo)
+
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        PCBDefectModel(weights)
+
+    fake_yolo.assert_not_called()

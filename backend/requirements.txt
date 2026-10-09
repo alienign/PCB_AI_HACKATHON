@@ -10,3 +10,5 @@ pytest
 torch
 torchvision
 ultralytics==8.4.174
+
+certifi>=2024.2.2,<2027

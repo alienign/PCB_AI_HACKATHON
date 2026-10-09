@@ -5,7 +5,13 @@ from pathlib import Path
 from ultralytics import YOLO
 
 from app.core.config import settings
+from app.services.model_registry_service import calculate_sha256
 
+
+
+TRUSTED_MODEL_SHA256 = (
+    "e0978435538c462009835c810787e32030154c40918b7211a0b3f409ec36453c"
+)
 
 CLASS_NAMES = {
     0: "short",
@@ -43,6 +49,14 @@ class PCBDefectModel:
         if not self.weights_path.is_file():
             raise FileNotFoundError(
                 f"ML weights not found: {self.weights_path}"
+            )
+
+        actual_hash = calculate_sha256(self.weights_path)
+
+        if actual_hash != TRUSTED_MODEL_SHA256:
+            raise ValueError(
+                "ML checkpoint SHA-256 mismatch: "
+                "refusing to load untrusted weights."
             )
 
         self.model = YOLO(str(self.weights_path))

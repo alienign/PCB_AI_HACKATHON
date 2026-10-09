@@ -56,7 +56,8 @@ signals:
 private:
     QNetworkAccessManager *networkManager;
 
-    QString baseUrl = "https://gumming-unmasking-unhitched.ngrok-free.dev";
+    QString baseUrl =
+        "https://gumming-unmasking-unhitched.ngrok-free.dev";
 };
 
 #endif // APICLIENT_H

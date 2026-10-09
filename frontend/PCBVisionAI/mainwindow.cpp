@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QFrame>
 #include <QLabel>
+#include <QCheckBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGraphicsDropShadowEffect>
@@ -21,11 +22,14 @@
 #include <QDir>
 #include <QStandardPaths>
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    setFixedSize(size());
 
     apiClient = new ApiClient(this);
 
@@ -301,9 +305,14 @@ MainWindow::MainWindow(QWidget *parent)
                         d.xMax = xMax;
                         d.yMax = yMax;
 
+                        d.number = i + 1;
+                        d.selected = true;
+
+
                         currentDetections.append(d);
 
                         addDefectCard(
+                            i + 1,
                             defectNameRu(defectType),
                             confidence
                             );
@@ -698,9 +707,13 @@ MainWindow::MainWindow(QWidget *parent)
                     d.yMax =
                         bbox.value("y_max").toDouble();
 
+                    d.number = i + 1;
+                    d.selected = true;
+
                     currentDetections.append(d);
 
                     addDefectCard(
+                        i + 1,
                         defectNameRu(defectType),
                         confidence
                         );
@@ -884,7 +897,11 @@ void MainWindow::chooseImage()
     apiClient->uploadImage(selectedImagePath);
 }
 
-void MainWindow::addDefectCard(const QString &name, double confidence)
+void MainWindow::addDefectCard(
+    int number,
+    const QString &name,
+    double confidence
+    )
 {
     QFrame *card = new QFrame(ui->scrollAreaWidgetContents);
 
@@ -901,7 +918,46 @@ void MainWindow::addDefectCard(const QString &name, double confidence)
     cardLayout->setContentsMargins(14, 12, 14, 12);
     cardLayout->setSpacing(6);
 
-    QLabel *nameLabel = new QLabel(name, card);
+    QCheckBox *checkBox = new QCheckBox(card);
+
+    checkBox->setChecked(true);
+
+    checkBox->setStyleSheet(
+        "QCheckBox {"
+        "color: #EAF7F4;"
+        "font-size: 14px;"
+        "font-weight: 600;"
+        "border: none;"
+        "}"
+        );
+
+    connect(
+        checkBox,
+        &QCheckBox::toggled,
+        this,
+        [this, number](bool checked)
+        {
+            int index = number - 1;
+
+            if (index < 0 ||
+                index >= currentDetections.size()) {
+                return;
+            }
+
+            currentDetections[index].selected = checked;
+
+            updateResultImage();
+        }
+        );
+
+    QLabel *nameLabel =
+        new QLabel(
+            QString("%1. %2")
+                .arg(number)
+                .arg(name),
+            card
+            );
+
     nameLabel->setStyleSheet(
         "QLabel {"
         "color: #EAF7F4;"
@@ -929,6 +985,8 @@ void MainWindow::addDefectCard(const QString &name, double confidence)
         "border: none;"
         "}"
         );
+
+    cardLayout->addWidget(checkBox);
 
     cardLayout->addWidget(nameLabel);
     cardLayout->addWidget(confidenceLabel);
@@ -1014,6 +1072,10 @@ void MainWindow::updateResultImage()
             const Detection &d =
                 currentDetections[i];
 
+            if (!d.selected) {
+                continue;
+            }
+
             int x =
                 static_cast<int>(
                     d.xMin * imageWidth
@@ -1060,7 +1122,7 @@ void MainWindow::updateResultImage()
             painter.drawText(
                 numberRect,
                 Qt::AlignCenter,
-                QString::number(i + 1)
+                QString::number(d.number)
                 );
 
             painter.setPen(pen);

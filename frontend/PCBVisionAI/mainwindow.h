@@ -25,6 +25,9 @@ struct Detection
     double yMin;
     double xMax;
     double yMax;
+
+    int number = 0;
+    bool selected = true;
 };
 
 class MainWindow : public QMainWindow
@@ -42,7 +45,11 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    void addDefectCard(const QString &name, double confidence);
+    void addDefectCard(
+        int number,
+        const QString &name,
+        double confidence
+        );
     void clearDefectCards();
 
     void addBoundingBox(double xMin,

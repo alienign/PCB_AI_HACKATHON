@@ -11,6 +11,7 @@
 #include <QUrl>
 #include <QJsonArray>
 #include <QDebug>
+#include <QTimer>
 
 ApiClient::ApiClient(QObject *parent)
     : QObject(parent)
@@ -76,6 +77,17 @@ void ApiClient::uploadImage(const QString &filePath)
     QNetworkReply *reply =
         networkManager->post(request, multiPart);
 
+    QTimer::singleShot(
+        10000,
+        reply,
+        [reply]()
+        {
+            if (reply->isRunning()) {
+                reply->abort();
+            }
+        }
+        );
+
     multiPart->setParent(reply);
 
     connect(
@@ -88,14 +100,41 @@ void ApiClient::uploadImage(const QString &filePath)
 
             if (reply->error() != QNetworkReply::NoError) {
 
-                QString errorMessage =
-                    QString::fromUtf8(responseData);
+                QString errorMessage;
 
-                if (errorMessage.isEmpty()) {
-                    errorMessage = reply->errorString();
+                QJsonDocument errorDocument =
+                    QJsonDocument::fromJson(responseData);
+
+                if (errorDocument.isObject()) {
+
+                    QJsonObject errorObject =
+                        errorDocument.object();
+
+                    QString detail =
+                        errorObject.value("detail").toString();
+
+                    if (detail ==
+                        "Image format does not match MIME type.") {
+
+                        errorMessage =
+                            "Формат изображения не соответствует расширению файла.";
+
+                    } else if (!detail.isEmpty()) {
+
+                        errorMessage = detail;
+                    }
                 }
 
-                emit uploadFailed(errorMessage);
+                if (errorMessage.isEmpty()) {
+
+                    errorMessage =
+                        "Не удалось подключиться к серверу.\n"
+                        "Проверьте соединение и попробуйте ещё раз.";
+                }
+
+                emit uploadFailed(
+                    errorMessage
+                    );
 
                 reply->deleteLater();
                 return;
@@ -174,6 +213,16 @@ void ApiClient::startAnalysis(qint64 imageId)
             request,
             requestData
             );
+    QTimer::singleShot(
+        10000,
+        reply,
+        [reply]()
+        {
+            if (reply->isRunning()) {
+                reply->abort();
+            }
+        }
+        );
 
     connect(
         reply,
@@ -378,8 +427,11 @@ void ApiClient::getHistory()
         this,
         [this, reply]()
         {
-            QByteArray responseData =
-                reply->readAll();
+            QByteArray responseData;
+
+            if (reply->isOpen()) {
+                responseData = reply->readAll();
+            }
 
             qDebug()
                 << "HISTORY HTTP:"

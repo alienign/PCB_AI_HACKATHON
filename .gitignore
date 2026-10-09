@@ -15,3 +15,8 @@ backend/storage/
 
 # ML model weights
 backend/models/*.pt
+# Local ML model weights
+/models/*.pt
+
+# Docker local data
+/docker-data/

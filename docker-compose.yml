@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pcb_user
+      POSTGRES_PASSWORD: ${PCB_DOCKER_DB_PASSWORD:?Set PCB_DOCKER_DB_PASSWORD}
+      POSTGRES_DB: pcb_ai
+    volumes:
+      - pcb_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pcb_user -d pcb_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    image: pcb-ai-backend:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8003:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://pcb_user:${PCB_DOCKER_DB_PASSWORD:?Set PCB_DOCKER_DB_PASSWORD}@db:5432/pcb_ai
+      STORAGE_PATH: /app/storage
+      ML_MODEL_PATH: /app/models/best.pt
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+    volumes:
+      - ./docker-data/storage:/app/storage
+      - ${PCB_MODEL_DIR:-./models}:/app/models:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pcb_postgres_data:

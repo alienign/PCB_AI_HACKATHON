@@ -1,0 +1,26 @@
+.venv/
+.venv311/
+
+__pycache__/
+*.py[cod]
+
+.idea/
+.vscode/
+
+.env
+.DS_Store
+
+backend/storage/
+
+# ML model weights
+backend/models/*.pt
+# Local ML model weights
+/models/*.pt
+
+# Docker local data
+/docker-data/
+
+# Qt Creator / CMake
+frontend/PCBVisionAI/build/
+frontend/PCBVisionAI/.qtcreator/
+*.user

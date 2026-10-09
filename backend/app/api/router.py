@@ -1,0 +1,12 @@
+from fastapi import APIRouter
+
+from app.api.routes.analysis_requests import router as analysis_requests_router
+from app.api.routes.health import router as health_router
+from app.api.routes.images import router as images_router
+
+
+api_router = APIRouter()
+
+api_router.include_router(health_router)
+api_router.include_router(images_router)
+api_router.include_router(analysis_requests_router)

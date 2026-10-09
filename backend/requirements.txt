@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-multipart
+Pillow
+SQLAlchemy
+psycopg[binary]
+alembic
+pytest
+torch
+torchvision
+ultralytics==8.4.174
+
+certifi>=2024.2.2,<2027
